@@ -46,6 +46,15 @@ if (
   fail('POST.json must be a JSON object with a string "url" field');
 }
 
+// The gate wants exactly https://x.com/<handle>/status/<digits> — no
+// query string, no fragment, digits-only id. A leftover placeholder or a
+// pasted share link would pass the JSON check above and fail the gate, so
+// reject it here before copying anything.
+const url = (parsed as { url: string }).url;
+if (!/^https:\/\/x\.com\/[^/\s]+\/status\/\d+$/.test(url)) {
+  fail(`POST.json url is not a plain X post link: ${url}`);
+}
+
 mkdirSync(OUTPUT_DIR, { recursive: true });
 
 const destination = join(OUTPUT_DIR, 'POST.json');
